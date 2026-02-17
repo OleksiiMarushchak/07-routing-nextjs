@@ -12,20 +12,24 @@ const api = axios.create({
 export async function fetchNotes(
   search: string,
   page: number,
-  perPage = 12
+  perPage = 12,
+  tag?: string
 ): Promise<{ notes: Note[]; totalPages: number }> {
+  const params: any = {
+    search,
+    page,
+    perPage,
+    sortBy: "created",
+  };
+  if (tag) {
+    params.tag = tag;
+  }
   const response: AxiosResponse<{
     notes: Note[];
     totalPages: number;
   }> = await api.get("/notes", {
-    params: {
-      search,
-      page,
-      perPage,
-      sortBy: "created",
-    },
+    params,
   });
-
   return response.data;
 }
 
