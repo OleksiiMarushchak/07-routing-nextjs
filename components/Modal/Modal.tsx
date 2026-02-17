@@ -1,22 +1,36 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import styles from './Modal.module.css';
 
 type Props = {
   children: React.ReactNode;
+  onClose?: () => void;
 };
 
-export default function Modal({ children }: Props) {
+export default function Modal({ children, onClose }: Props) {
   const router = useRouter();
-  const modalRoot = document.getElementById('modal-root');
-
-  const close = () => router.back();
+  const [mounted, setMounted] = useState(false);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    // блокування скролу
+    setMounted(true);
+    setModalRoot(document.getElementById('modal-root'));
+  }, []);
+
+  const close = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
+  };
+
+  useEffect(() => {
+    if (!mounted) return;
+
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,9 +45,9 @@ export default function Modal({ children }: Props) {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [mounted]);
 
-  if (!modalRoot) return null;
+  if (!mounted || !modalRoot) return null;
 
   return createPortal(
     <div
