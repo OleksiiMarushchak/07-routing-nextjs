@@ -1,13 +1,47 @@
 "use client";
+
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
+import type { Note } from "@/types/note";
+
 import Modal from "@/components/Modal/Modal";
 
-export default function NotePreview({ note }: { note: any }) {
+interface Props {
+  id: string;
+}
+
+export default function NotePreview({ id }: Props) {
+  const router = useRouter();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+  });
+
+  const handleClose = () => {
+    router.back();
+  };
+
   return (
-    <Modal onClose={() => window.history.back()}>
-      <h2>{note.title}</h2>
-      <p><b>Tag:</b> {note.tag}</p>
-      <p>{note.content}</p>
-      <p style={{fontSize:12, color:'#888'}}>Created: {note.createdAt}</p>
+    <Modal onClose={handleClose}>
+      {isLoading && <p>Loading...</p>}
+      {isError && <p>Error loading note</p>}
+
+      {data && (
+        <div>
+          <button onClick={handleClose}>Close</button>
+
+          <h2>{data.title}</h2>
+          <p>
+            <b>Tag:</b> {data.tag}
+          </p>
+          <p>{data.content}</p>
+          <p style={{ fontSize: 12, color: "#888" }}>
+            Created: {data.createdAt}
+          </p>
+        </div>
+      )}
     </Modal>
   );
 }

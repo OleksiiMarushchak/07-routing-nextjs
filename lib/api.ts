@@ -8,6 +8,13 @@ const api = axios.create({
     Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
   },
 });
+interface FetchNotesParams {
+  search: string;
+  page: number;
+  perPage: number;
+  sortBy: string;
+  tag?: string;
+}
 
 export async function fetchNotes(
   search: string,
@@ -15,23 +22,27 @@ export async function fetchNotes(
   perPage = 12,
   tag?: string
 ): Promise<{ notes: Note[]; totalPages: number }> {
-  const params: any = {
+  const params: FetchNotesParams = {
     search,
     page,
     perPage,
     sortBy: "created",
   };
+
   if (tag) {
     params.tag = tag;
   }
+
   const response: AxiosResponse<{
     notes: Note[];
     totalPages: number;
   }> = await api.get("/notes", {
     params,
   });
+
   return response.data;
 }
+
 
 export async function createNote(
   note: Omit<Note, "id" | "createdAt" | "updatedAt">
